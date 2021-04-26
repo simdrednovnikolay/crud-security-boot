@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+</head>
+<body>
+<table border="1">
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Password</th>
+        <th>Roles</th>
+        <th>Actions</th>
+    </tr>
+
+    <tr th:each="user, state : ${allUs}"
+        class="row" th:classappend="${state.odd} ? 'odd-row' : 'even-row'">
+
+        <td th:utext="${user.id}">Id</td>
+        <td th:utext="${user.name}"> Name</td>
+        <td th:utext="${user.password}">Password</td>
+        <td th:utext="${user.getRoles1()}">Role</td>
+        <td><a th:href="@{/userUpdate/{id}(id=${user.getId()})}">Edit</a>
+            <a th:href="@{/delete/{id}(id=${user.getId()})}">Delete</a>
+        </td>
+    </tr>
+
+</table>
+<input type="button" value="add"
+       onclick="window.location.href= '/addNewUser'">
+<br><br>
+<a href="#" th:href="@{/logout}">Log Out</a>
+</body>
+</html>

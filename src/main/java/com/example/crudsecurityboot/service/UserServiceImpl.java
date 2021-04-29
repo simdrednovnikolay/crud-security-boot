@@ -79,14 +79,14 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
-    public void updateUserAndRoles(User user, String[] roleList) {
+    public void updateUserAndRoles(User user, String[] roleListInMethod) {
         Set<Role> update = new HashSet<>();
 
 
-            for (int i =0; i<roleList.length; i++) {
-                if (!user.getRoles().contains(roleList[i])){
+            for (int i =0; i<roleListInMethod.length; i++) {
+                if (!user.getRoles().contains(roleListInMethod[i])){
 
-                    update.add(getByRole(roleList[i]));
+                    update.add(getByRole(roleListInMethod[i]));
                 }
                 user.setRoles(update);
             }

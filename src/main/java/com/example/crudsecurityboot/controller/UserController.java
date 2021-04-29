@@ -1,13 +1,17 @@
 package com.example.crudsecurityboot.controller;
 
 import com.example.crudsecurityboot.dao.RoleRepository;
+import com.example.crudsecurityboot.model.Role;
 import com.example.crudsecurityboot.model.User;
 import com.example.crudsecurityboot.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class UserController {
@@ -15,9 +19,6 @@ public class UserController {
     private final UserService userService;
 
     private final RoleRepository roleRepository;
-
-
-
 
     public UserController(UserService userService, RoleRepository roleRepository) {
         this.userService = userService;
@@ -30,45 +31,79 @@ public class UserController {
         return "pageForUser";
     }
 
-    @GetMapping("/admin")
+
+
+
+    @GetMapping(value = "/admin")
     public  String showAllUser(Model model) {
         List<User> allUs = userService.getAllUsers();
         model.addAttribute("allUs",allUs);
+        model.addAttribute("allR", roleRepository.findAll());
+        model.addAttribute("addUser", new User());
         return "admin";
     }
 
 
 
-    @GetMapping("/addNewUser")
-    public String addNewUser (Model model) {
-        model.addAttribute("roles", userService.getAllRoles());
-        model.addAttribute("user", new User());
-        return "addNewUser";
+    @PostMapping(value = "/adNewUser")
+    public String addNewUser (@ModelAttribute("addUser") User user,
+                              @RequestParam(value = "roles", required = false) String[] role) {
+
+        userService.updateUserAndRoles(user, role);
+        return "redirect:/admin";
     }
-    @PostMapping("/saveUser")
-    public String saveUser (@ModelAttribute("user") User user) {
+
+    @PostMapping("/edit")
+    public String editUser (@RequestParam(value = "id", required = false) Long id,
+                            @RequestParam(value = "firstName", required = false) String name,
+                            @RequestParam(value = "password", required = false) String password,
+                            @RequestParam(value = "roles",required = false) String roles, Model model) {
+
+        model.addAttribute("allR", roleRepository.findAll());
+        User user = userService.getUserId(id);
+        user.setName(name);
+        user.setPassword(password);
+
+        Set<Role> roleSet = new HashSet<>();
+        if (roles.contains("ROLE_USER")){
+            roleSet.add(new Role("ROLE_USER"));
+            user.setRoles(roleSet);
+        }
+        if (roles.contains("ROLE_ADMIN")) {
+            roleSet.add(new Role("ROLE_ADMIN"));
+            user.setRoles(roleSet);
+        }
         userService.saveUser(user);
         return "redirect:/admin";
     }
 
-    @GetMapping("/userUpdate/{id}")
-    public String edit(Model model, @PathVariable(value = "id") Long id) {
-        model.addAttribute("user", userService.getUserId(id));
-        model.addAttribute("roles", userService.getAllRoles());
+//    @RequestMapping(value = "/userUpdate/{id}",  method = {RequestMethod.GET, RequestMethod.POST})
+//    public String edit(Model model, @PathVariable(value = "id") Long id) {
+//        model.addAttribute("users", userService.getUserId(id));
+//        model.addAttribute("roles", userService.getAllRoles());
+//
+//        return "redirect:/admin";
+//    }
 
-        return "userUpdate";
-    }
+//    @PostMapping("/edit")
+//    public String updateUser(@ModelAttribute("users") User user,
+//                             @RequestParam(value = "roles", required = false)String [] role,
+//                                @PathVariable("id") Long id) {
+//
+//
+//        userService.updateUserAndRoles(user, role);
+//        return "redirect:/admin";
+//    }
 
-    @PostMapping("/userUpdate")
-    public String updateUser(@ModelAttribute("user") User user,
-                             @RequestParam(value = "roles", required = false)String [] roleList) {
-        userService.updateUserAndRoles(user, roleList);
-        return "redirect:/admin";
-    }
-
-    @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable("id") Long id) {
+    @PostMapping("/delete")
+    public String deleteUser(@RequestParam("idDelete") Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
     }
+
+//    @GetMapping("/findById")
+//    @ResponseBody
+//    public User findById(Long id) {
+//        return userService.getUserId(id);
+//    }
 }

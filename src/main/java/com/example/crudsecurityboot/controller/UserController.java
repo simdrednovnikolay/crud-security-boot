@@ -4,14 +4,16 @@ import com.example.crudsecurityboot.dao.RoleRepository;
 import com.example.crudsecurityboot.model.Role;
 import com.example.crudsecurityboot.model.User;
 import com.example.crudsecurityboot.service.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 @Controller
 public class UserController {
@@ -27,83 +29,56 @@ public class UserController {
     }
 
     @GetMapping("/pageForUser")
-    public String userPage() {
+    public String userPage( Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userInPage = authentication.getName();
+        model.addAttribute("user", userService.getByName(userInPage));
         return "pageForUser";
     }
 
-
-
-
-    @GetMapping(value = "/admin")
+    @GetMapping("/admin")
     public  String showAllUser(Model model) {
         List<User> allUs = userService.getAllUsers();
         model.addAttribute("allUs",allUs);
-        model.addAttribute("allR", roleRepository.findAll());
-        model.addAttribute("addUser", new User());
+        model.addAttribute("allRol",roleRepository.findAll());
+        model.addAttribute("newUser", new User());
         return "admin";
     }
 
-
-
     @PostMapping(value = "/adNewUser")
-    public String addNewUser (@ModelAttribute("addUser") User user,
+    public String addNewUser (@ModelAttribute("newUser") User user,
                               @RequestParam(value = "roles", required = false) String[] role) {
 
         userService.updateUserAndRoles(user, role);
         return "redirect:/admin";
     }
 
-    @PostMapping("/edit")
-    public String editUser (@RequestParam(value = "id", required = false) Long id,
-                            @RequestParam(value = "firstName", required = false) String name,
-                            @RequestParam(value = "password", required = false) String password,
-                            @RequestParam(value = "roles",required = false) String roles, Model model) {
+    @PostMapping("/userUpdate/{id}")
+    public String editUser(@PathVariable(value = "id") Long id,
+                           @RequestParam(value = "firstName", required = false) String firstName,
+                           @RequestParam(value = "password", required = false) String password,
+                           @RequestParam(value = "roles", required = false) String[] role,
+                           Model model) {
 
-        model.addAttribute("allR", roleRepository.findAll());
+        model.addAttribute("allRole", userService.getAllRoles());
         User user = userService.getUserId(id);
-        user.setName(name);
+        user.setName(firstName);
         user.setPassword(password);
 
-        Set<Role> roleSet = new HashSet<>();
-        if (roles.contains("ROLE_USER")){
-            roleSet.add(new Role("ROLE_USER"));
-            user.setRoles(roleSet);
-        }
-        if (roles.contains("ROLE_ADMIN")) {
-            roleSet.add(new Role("ROLE_ADMIN"));
-            user.setRoles(roleSet);
+        for(int i=0; i<role.length; i++) {
+            Set<Role> roleSet = new HashSet<>();
+            if (!user.getRoles().contains(role[i])){
+                roleSet.add(userService.getByRole(role[i]));
+                user.setRoles(roleSet);
+            }
         }
         userService.saveUser(user);
         return "redirect:/admin";
     }
 
-//    @RequestMapping(value = "/userUpdate/{id}",  method = {RequestMethod.GET, RequestMethod.POST})
-//    public String edit(Model model, @PathVariable(value = "id") Long id) {
-//        model.addAttribute("users", userService.getUserId(id));
-//        model.addAttribute("roles", userService.getAllRoles());
-//
-//        return "redirect:/admin";
-//    }
-
-//    @PostMapping("/edit")
-//    public String updateUser(@ModelAttribute("users") User user,
-//                             @RequestParam(value = "roles", required = false)String [] role,
-//                                @PathVariable("id") Long id) {
-//
-//
-//        userService.updateUserAndRoles(user, role);
-//        return "redirect:/admin";
-//    }
-
-    @PostMapping("/delete")
-    public String deleteUser(@RequestParam("idDelete") Long id) {
+    @PostMapping("/delete/{id}")
+    public String deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
     }
-
-//    @GetMapping("/findById")
-//    @ResponseBody
-//    public User findById(Long id) {
-//        return userService.getUserId(id);
-//    }
 }

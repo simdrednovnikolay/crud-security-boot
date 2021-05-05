@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <title>Admin panel</title>
+
+</head>
+<body>
+<header>
+    <div class="container-fluid bg-dark">
+        <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+            <a class="navbar-brand text-white" href="#"><h5><span sec:authentication="name"></span></h5></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active text-white-50">
+
+                        <h5>with roles:
+                            <span sec:authorize="hasAnyRole('ROLE_ADMIN')">
+                               ROLE_ADMIN
+                            </span>
+                            <span sec:authorize="hasAnyRole('ROLE_USER')">
+                                ROLE_USER
+                            </span>
+                        </h5>
+                    </li>
+                </ul>
+                <a class="nav-link text-white-50" href="http://localhost:8080/logout">Logout</a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action" id="list-home-list" data-toggle="list"
+                   href="/admin" role="tab" sec:authorize="hasRole('ROLE_ADMIN')" aria-controls="home">Admin</a>
+                <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list"
+                   href="/pageForUser" sec:authorize="hasRole('ROLE_USER')" role="tab" aria-controls="profile">User</a>
+            </div>
+        </div>
+            <div class="col-10 p-5 mb-2 bg-light">
+                <h1>Admin panel</h1>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#UsersTable" id="idUsersTable">Users
+                            table</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#NewUser">New User</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="UsersTable" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <div class="tab-content">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b>All Users</b>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped border">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Password</th>
+                                            <th>Role</th>
+                                            <th>Edit</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="allUsers">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- window "addNewUser"-->
+                    <div class="tab-pane fade" id="NewUser">
+                        <div class="card">
+                            <div class="card-header">Add new user</div>
+                            <div class="card-body text-center">
+                                <div class="form justify-content-center mx-auto col-md-3">
+
+                                    <form id="newUserForm">
+
+                                        <div class="form-group">
+                                            <label>Name</label>
+                                            <input type="text" class="form-control"
+                                                   id="nameNew">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Password</label>
+                                            <input type="password" class="form-control"
+                                                   id="passwordNew">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Role</label>
+                                            <select class="form-control" id="roleNew"
+                                                    size="2" multiple>
+                                            </select>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-success">Add new user
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- modal window "edit"-->
+        <div class="modal fade" id="modalEdit"
+             tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit user</h5>
+                        <button type="button" class="close"
+                                data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body text-center">
+
+                        <div class="form justify-content-center mx-auto col-6">
+
+                            <form id="editForm">
+
+                                <div class="form-group">
+                                    <label>Id</label>
+                                    <input type="number" id="idEdit"
+                                           readonly class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input type="text" id="nameEdit"
+                                           class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password"
+                                           id="passwordEdit"
+                                           class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Role</label>
+                                    <select size="2" class="form-control"
+                                            id="roleEdit" multiple>
+                                    </select>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-dismiss="modal">Close
+                                    </button>
+                                    <button type="submit"
+                                            class="btn btn-primary">Edit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- modal window "delete"-->
+        <div class="modal fade" id="modalDelete"
+             tabindex="-1" role="dialog"
+             aria-labelledby="TitleModalLabel2" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="TitleModalLabel2">Delete
+                            user</h5>
+                        <button type="button" class="close"
+                                data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <div class="form-row justify-content-center mx-auto col-6">
+
+                            <form id="deleteForm">
+
+                                <div class="form-group">
+                                    <label>Id</label>
+                                    <input type="number" readonly
+                                           id="idDelete"
+                                           class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input type="text" readonly
+                                           id="nameDelete"
+                                           class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" readonly
+                                           id="passwordDelete"
+                                           class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Role</label>
+                                    <div>
+                                        <select class="form-control"
+                                                size="2" readonly
+                                                id="roleDelete">
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-dismiss="modal">Close
+                                    </button>
+                                    <button type="submit"
+                                            class="btn btn-danger">Delete
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+ </div>
+
+
+
+
+<script>
+    function allUsers() {
+        fetch("http://localhost:8080/allUsers")
+            .then((res) => res.json())
+            .then((data) => {
+                let output = "";
+                data.forEach(function (user) {
+
+                    output += `
+                <tr>
+                <td id="id${user.id}">${user.id}</td>
+                <td id="name${user.id}">${user.name}</td>
+                <td id="password${user.id}">${user.password}</td>
+                <td id="roles${user.id}">${user.roles.map(role => role.name)}</td>
+                <td>
+                <a class="btn btn-info" role="button" data-target="#modalEdit"
+                data-toggle="modal" onclick="openModalWindowEdit(${user.id})">Edit</a>
+                </td>
+                <td>
+                <a class="btn btn-danger" role="button" data-target="#modalDelete"
+                data-toggle="modal" onclick="openModalWindowDelete(${user.id})">Delete</a>
+                </td>
+              </tr>
+          `;
+                });
+                document.getElementById("allUsers").innerHTML = output;
+            })
+    }
+
+    function openModalWindowEdit(id) {
+        document.getElementById("idEdit").value = id;
+        document.getElementById("nameEdit").value = $("#name" + id).text();
+        document.getElementById("passwordEdit").value = $("#password" + id).text();
+    }
+
+    function openModalWindowDelete(id) {
+        document.getElementById("idDelete").value = id;
+        document.getElementById("nameDelete").value = $("#name" + id).text();
+        document.getElementById("passwordDelete").value = $("#password" + id).text();
+
+    }
+
+    allUsers()
+</script>
+
+<script>
+    document.getElementById("newUserForm").addEventListener("submit", addNewUser);
+
+    function addNewUser(e){
+        e.preventDefault();
+
+        let firstName = document.getElementById("nameNew").value;
+        let password = document.getElementById("passwordNew").value;
+        let roles = setRoles(Array.from(document.getElementById("roleNew").selectedOptions)
+            .map(option => option.value));
+
+        fetch("http://localhost:8080/addUser", {
+            method: "POST",
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify({
+                name: firstName,
+                password: password,
+                roles: roles
+            })
+        })
+            .finally(() => {
+                document.getElementById("idUsersTable").click();
+                allUsers();
+                document.getElementById("newUserForm").reset();
+            })
+    }
+
+    function setRoles(someRoles) {
+        let roles = [];
+        if (someRoles.indexOf("ROLE_USER") >= 0) {
+            roles.push({"id": 2, "role": "ROLE_USER"});
+        }
+        if (someRoles.indexOf("ROLE_ADMIN") >= 0) {
+            roles.push({"id": 1, "role": "ROLE_ADMIN"});
+        }
+        return roles;
+    }
+    function getRoles() {
+        fetch("http://localhost:8080/allRoles").then((res) => res.json())
+            .then((data) => {
+                let output = "";
+                data.forEach(function (role) {
+                    output += `<option>${role.name}</option>`;
+                });
+                document.getElementById("roleNew").innerHTML = output;
+                document.getElementById("roleEdit").innerHTML = output;
+                document.getElementById("roleDelete").innerHTML = output;
+            })
+    }
+
+    getRoles()
+</script>
+
+<script>
+    document.getElementById("editForm").addEventListener("submit", editPost)
+
+    function editPost(e){
+        e.preventDefault();
+
+        let id = document.getElementById("idEdit").value;
+        let name = document.getElementById("nameEdit").value;
+        let password = document.getElementById("passwordEdit").value;
+        let roles = setRoles(Array.from(document.getElementById("roleEdit").selectedOptions)
+            .map(option => option.value));
+
+        fetch("http://localhost:8080/editUser", {
+            method:"PUT",
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Content-type":"application/json"
+            },
+            body:JSON.stringify({
+                id:id,
+                name:name,
+                password:password,
+                roles:roles
+            })
+        }).finally(() => {
+            $('#modalEdit').modal("hide")
+            allUsers();
+        })
+    }
+
+    document.getElementById("deleteForm").addEventListener("submit", deletePost)
+
+    function deletePost(e){
+        e.preventDefault();
+
+        let id = document.getElementById("idDelete").value;
+        let firstName = document.getElementById("nameDelete").value;
+        let password = document.getElementById("passwordDelete").value;
+        let roles = setRoles(Array.from(document.getElementById("roleDelete").selectedOptions)
+            .map(option => option.value));
+
+        fetch("http://localhost:8080/deleteUser/" + id, {
+            method:"DELETE",
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Content-type":"application/json"
+            },
+            body:JSON.stringify({
+                id:id,
+                name:name,
+                password:password,
+                roles:roles
+            })
+        }).finally(() => {
+            $('#modalDelete').modal("hide")
+            allUsers();
+        })
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>

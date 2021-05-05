@@ -35,8 +35,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                .antMatchers("/admin").hasAnyAuthority("ROLE_ADMIN")
-                .antMatchers("/pageForUser").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+                .antMatchers("/adminPage/**").hasAnyAuthority("ROLE_ADMIN")
+                .antMatchers("/userPage/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                 .anyRequest().authenticated()
                 .and().formLogin().permitAll()
                 .successHandler(successUserHandler)
@@ -52,6 +52,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public static NoOpPasswordEncoder passwordEncoder() {
         return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
     }
+
+
 
 
 

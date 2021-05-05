@@ -1,25 +1,13 @@
 package com.example.crudsecurityboot.controller;
 
-import com.example.crudsecurityboot.dao.RoleRepository;
 import com.example.crudsecurityboot.model.Role;
 import com.example.crudsecurityboot.model.User;
 import com.example.crudsecurityboot.service.UserService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.lang.reflect.Method;
 import java.security.Principal;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @RestController
@@ -31,12 +19,11 @@ public class UserController {
         this.userService = userService;
     }
 
-
-
     @GetMapping("/getUser")
-    public User getUserAutorise(Principal principal) {
+    public ResponseEntity<User> getUserAutorise(Principal principal) {
         String nameAutoriseUser = principal.getName();
-        return userService.getByName(nameAutoriseUser);
+        User user = userService.getByName(nameAutoriseUser);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/allUsers")

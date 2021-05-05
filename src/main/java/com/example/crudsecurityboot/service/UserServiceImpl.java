@@ -1,6 +1,5 @@
 package com.example.crudsecurityboot.service;
 
-import com.example.crudsecurityboot.dao.RoleRepository;
 import com.example.crudsecurityboot.dao.UserRepository;
 import com.example.crudsecurityboot.model.Role;
 import com.example.crudsecurityboot.model.User;
@@ -15,17 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 import java.util.*;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService{
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
 
     @Autowired
     ConversionService conversionService;
@@ -73,27 +71,6 @@ public class UserServiceImpl implements UserService{
     public List<Role> getAllRoles() {
         return entityManager.createQuery("select r from Role r", Role.class).getResultList();
     }
-
-
-    @Override
-    public void updateUserAndRoles(User user, String[] roleListInMethod) {
-        Set<Role> update = new HashSet<>();
-
-
-            for (int i =0; i<roleListInMethod.length; i++) {
-                if (!user.getRoles().contains(roleListInMethod[i])){
-
-                    update.add(getByRole(roleListInMethod[i]));
-                }
-                user.setRoles(update);
-            }
-
-        userRepository.save(user);
-        }
-
-
-
-
 
     @Override
     @Transactional
